@@ -1,0 +1,12 @@
+# k8s/db-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: db # 【重要】Service 的名稱必須是 "db"
+spec:
+  selector:
+    app: db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

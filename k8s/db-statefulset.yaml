@@ -1,0 +1,49 @@
+# k8s/db-statefulset.yaml (修正版)
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db-statefulset
+spec:
+  serviceName: "db"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          # 【關鍵修正】使用 'env' 來明確對應每一個變數
+          env:
+            - name: POSTGRES_DB       # 容器內期望的變數名稱
+              valueFrom:              # 值來自於...
+                secretKeyRef:         # 一個 Secret 的引用
+                  name: portfolio-secrets # Secret 的名稱
+                  key: DB_NAME        # Secret 中的鍵 (Key)
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: portfolio-secrets
+                  key: DB_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: portfolio-secrets
+                  key: DB_PASS
+          volumeMounts:
+            - name: db-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: db-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

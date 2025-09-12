@@ -1,0 +1,13 @@
+# k8s/backend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service # Service 的名稱
+spec:
+  selector:
+    app: backend # 找到所有帶有 app=backend 標籤的 Pods
+  ports:
+    - protocol: TCP
+      port: 8000       # Service 自己的埠號
+      targetPort: 8000 # 轉發流量到 Pod 內部容器的 8000 埠
+  type: ClusterIP # 這種類型只在叢集內部暴露服務，我們之後會用 Port Forward 來訪問它

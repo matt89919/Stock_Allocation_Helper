@@ -1,0 +1,12 @@
+# k8s/redis-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis # 【重要】Service 的名稱必須是 "redis"
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379

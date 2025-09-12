@@ -1,0 +1,26 @@
+# k8s/celery-worker-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker-deployment
+spec:
+  replicas: 2 # 啟動 2 個工人副本，可以並行處理任務
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      containers:
+        - name: celery-worker-container
+          # 【重要】使用與 backend deployment 相同的映像檔
+          image: portfolio-tracker:v1 
+          imagePullPolicy: Never
+          # 啟動 Worker 的指令
+          command: ["celery", "-A", "config", "worker", "-l", "info"]
+          # 從 Secret 讀取所有環境變數，以便連接 db 和 redis
+          envFrom:
+            - secretRef:
+                name: portfolio-secrets

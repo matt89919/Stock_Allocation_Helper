@@ -1,0 +1,25 @@
+# k8s/backend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment # Deployment 的名稱
+spec:
+  replicas: 1 # 我們先啟動 1 個應用程式副本 (Pod)
+  selector:
+    matchLabels:
+      app: backend # 這個標籤用來找到要管理的 Pods
+  template:
+    metadata:
+      labels:
+        app: backend # 為 Pod 加上標籤，讓上面的 selector 能找到它
+    spec:
+      containers:
+        - name: backend-container
+          image: portfolio-tracker:v1 
+          imagePullPolicy: Never
+          command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: portfolio-secrets # 從我們剛才建立的 Secret 中讀取所有環境變數

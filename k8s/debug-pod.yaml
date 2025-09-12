@@ -1,0 +1,26 @@
+# k8s/debug-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-pod
+spec:
+  containers:
+    - name: debug-container
+      image: busybox:1.28
+      command: ["/bin/sh", "-c", "sleep 3600"] # 讓容器保持運行一小時
+      env: # 【關鍵】我們使用與 db-statefulset 完全相同的環境變數設定
+        - name: MY_DB_NAME # 為了測試，我們也檢查其他變數
+          valueFrom:
+            secretKeyRef:
+              name: portfolio-secrets
+              key: DB_NAME
+        - name: MY_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: portfolio-secrets
+              key: DB_USER
+        - name: POSTGRES_PASSWORD # 我們關心的核心變數
+          valueFrom:
+            secretKeyRef:
+              name: portfolio-secrets
+              key: DB_PASS

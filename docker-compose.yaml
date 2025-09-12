@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # 1. 資料庫服務 (PostgreSQL)
+  db:
+    image: postgres:15 # 使用官方 PostgreSQL 映像檔
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env # 從 .env 檔案讀取環境變數
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+
+  # 2. 快取與訊息代理服務 (Redis)
+  redis:
+    image: redis:7 # 使用官方 Redis 映像檔
+
+  # 3. 後端主應用服務 (Django)
+  backend:
+    build: . # 使用當前目錄的 Dockerfile 來建構映像檔
+    command: python manage.py runserver 0.0.0.0:8000 # 啟動伺服器的指令
+    volumes:
+      - .:/app # 將本地程式碼掛載到容器中，方便開發時即時修改
+    ports:
+      - "8000:8000" # 將您電腦的 8000 埠映射到容器的 8000 埠
+    env_file:
+      - .env # 讀取 .env 檔案
+    depends_on: # 告訴 Docker Compose，backend 依賴於 db 和 redis，應在其後啟動
+      - db
+      - redis
+
+  # 4. Celery Worker 服務
+  celery_worker:
+    build: .
+    command: celery -A config worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  # 5. Celery Beat 服務
+  celery_beat:
+    build: .
+    command: celery -A config beat -l info -S django
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data: 

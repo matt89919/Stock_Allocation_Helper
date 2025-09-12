@@ -1,0 +1,11 @@
+# k8s/db-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-persistent-volume-claim # PVC 的名稱
+spec:
+  accessModes:
+    - ReadWriteOnce # 這個儲存空間一次只能被一個節點讀寫
+  resources:
+    requests:
+      storage: 1Gi # 我們申請 1 GiB 的儲存空間
