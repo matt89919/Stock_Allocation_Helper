@@ -1,0 +1,24 @@
+# migrate-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # Use a new name for each migration job
+  name: portfolio-migration-job-v2
+spec:
+  template:
+    spec:
+      containers:
+      - name: django-migrate
+        # Use the NEW image with the migration file
+        image: portfolio-tracker:v2
+        imagePullPolicy: Never
+        # The command to run the migration
+        command: ["python", "manage.py", "migrate", "--noinput"]
+        # Use the same secrets as your backend to connect to the DB
+        envFrom:
+          - secretRef:
+              name: portfolio-secrets
+      # The pod should not be restarted if it completes successfully
+      restartPolicy: OnFailure
+  # If the job fails (e.g., DB not ready), it will retry
+  backoffLimit: 4

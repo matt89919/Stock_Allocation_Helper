@@ -1,37 +1,59 @@
-# portfolio_tracker/serializers.py
 from rest_framework import serializers
-from .models import Stock, Option, Holding, PriceAlert
+from .models import (
+    PortfolioSnapshot, Stock, Option, Holding, Deposit, Transaction, RealizedGain
+)
 
 class StockSerializer(serializers.ModelSerializer):
+    instrument_name = serializers.CharField(source='symbol', read_only=True)
     class Meta:
         model = Stock
-        fields = '__all__'
+        fields = ['symbol', 'name', 'last_price', 'previous_close', 'instrument_name']
 
 class OptionSerializer(serializers.ModelSerializer):
+    instrument_name = serializers.StringRelatedField(source='__str__')
     class Meta:
         model = Option
-        fields = '__all__'
+        fields = [
+            'id', 'instrument_name', 'last_price', 'previous_close',
+            'underlying_stock', 'strike_price', 'expiration_date', 'option_type'
+        ]
 
 class HoldingSerializer(serializers.ModelSerializer):
-    # 為了在 API 中更清晰地顯示 instrument 名稱
     instrument_name = serializers.StringRelatedField(source='instrument', read_only=True)
-
     class Meta:
         model = Holding
-        # 顯示 'instrument_name' 而不是 'content_type' 和 'object_id'
-        fields = ['id', 'instrument_name', 'quantity', 'cost_basis', 'content_type', 'object_id']
-        extra_kwargs = {
-            'content_type': {'write_only': True}, # 這些欄位只在寫入時需要
-            'object_id': {'write_only': True},
-        }
+        fields = ['id', 'instrument_name', 'quantity', 'cost_basis']
 
-class PriceAlertSerializer(serializers.ModelSerializer):
-    instrument_name = serializers.StringRelatedField(source='instrument', read_only=True)
+class PortfolioSnapshotSerializer(serializers.ModelSerializer):
+    value = serializers.DecimalField(max_digits=15, decimal_places=4, source='total_value')
+    class Meta:
+        model = PortfolioSnapshot
+        fields = ['date', 'value']
+
+# --- NEW SERIALIZERS for the transaction-based system ---
+
+class DepositSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deposit
+        fields = '__all__'
+
+class TransactionSerializer(serializers.ModelSerializer):
+    # These extra fields are needed for the frontend to create a transaction,
+    # but are not part of the Transaction model itself.
+    symbol = serializers.CharField(write_only=True)
+    strike_price = serializers.DecimalField(max_digits=12, decimal_places=4, write_only=True, required=False)
+    expiration_date = serializers.DateField(write_only=True, required=False)
+    option_type = serializers.CharField(write_only=True, required=False)
 
     class Meta:
-        model = PriceAlert
-        fields = ['id', 'instrument_name', 'target_price', 'condition', 'status', 'content_type', 'object_id']
-        extra_kwargs = {
-            'content_type': {'write_only': True},
-            'object_id': {'write_only': True},
-        }
+        model = Transaction
+        fields = [
+            'id', 'transaction_type', 'quantity', 'price', 'date', 
+            'symbol', 'strike_price', 'expiration_date', 'option_type'
+        ]
+
+class RealizedGainSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RealizedGain
+        fields = '__all__'
+

@@ -16,7 +16,7 @@ spec:
       containers:
         - name: celery-worker-container
           # 【重要】使用與 backend deployment 相同的映像檔
-          image: portfolio-tracker:v1 
+          image: portfolio-tracker:v2
           imagePullPolicy: Never
           # 啟動 Worker 的指令
           command: ["celery", "-A", "config", "worker", "-l", "info"]

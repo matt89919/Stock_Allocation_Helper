@@ -16,11 +16,6 @@ __pycache__/
 # 包含密鑰和個人設定的 .env 檔案，絕對不能上傳！
 .env
 
-# 資料庫檔案
-# 如果在本地測試時使用了 SQLite
-*.sqlite3
-db.sqlite3
-
 # IDE / 編輯器設定
 .vscode/
 .idea/
@@ -30,6 +25,3 @@ db.sqlite3
 
 # Log 檔案
 *.log
-
-# 其他
-# ... 如果您有其他本地暫存檔，可以在此加入 ...

@@ -15,11 +15,11 @@ spec:
     spec:
       containers:
         - name: backend-container
-          image: portfolio-tracker:v1 
+          image: portfolio-tracker:v2
           imagePullPolicy: Never
-          command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+          command: ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
           ports:
             - containerPort: 8000
           envFrom:
             - secretRef:
-                name: portfolio-secrets # 從我們剛才建立的 Secret 中讀取所有環境變數
+                name: portfolio-secrets 

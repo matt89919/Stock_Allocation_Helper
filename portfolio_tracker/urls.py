@@ -1,16 +1,23 @@
-# portfolio_tracker/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
 
-# 建立一個 router 並註冊我們的 viewsets
+# Create a router and register our new viewsets
 router = DefaultRouter()
 router.register(r'stocks', views.StockViewSet)
 router.register(r'options', views.OptionViewSet)
 router.register(r'holdings', views.HoldingViewSet)
-router.register(r'alerts', views.PriceAlertViewSet)
+router.register(r'portfolio-history', views.PortfolioHistoryViewSet, basename='portfolio-history')
 
-# API URL 會由 router 自動產生
+# --- NEW ENDPOINTS REGISTERED HERE ---
+router.register(r'deposits', views.DepositViewSet, basename='deposit')
+router.register(r'transactions', views.TransactionViewSet, basename='transaction')
+
 urlpatterns = [
+    # The router now automatically handles all URL patterns for the ViewSets
     path('', include(router.urls)),
+    
+    # Add the new path for the summary data view
+    path('portfolio-summary/', views.portfolio_summary_view, name='portfolio-summary'),
 ]
+

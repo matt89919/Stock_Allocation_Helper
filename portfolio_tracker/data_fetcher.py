@@ -5,9 +5,6 @@ from typing import Union
 
 import requests
 
-# ------------------- 初始化 Finnhub Client -------------------
-# 我們只在程式啟動時初始化一次，而不是在每次函式呼叫時都初始化
-# 這樣效率更高
 finnhub_client = None
 if hasattr(settings, 'FINNHUB_API_TOKEN'):
     finnhub_client = finnhub.Client(api_key=settings.FINNHUB_API_TOKEN)
@@ -19,7 +16,7 @@ else:
 
 def fetch_stock_data_from_finnhub(symbol: str) -> Union[dict, None]:
     """
-    使用 finnhub-python 官方函式庫獲取最新報價。
+    使用 finnhub-python 官方函式庫獲取最新報價和昨日收盤價。
     """
     if not finnhub_client:
         return None
@@ -30,14 +27,17 @@ def fetch_stock_data_from_finnhub(symbol: str) -> Union[dict, None]:
         
         # 'c' = current price (當前價格)
         # 'pc' = previous close price (昨日收盤價)
-        price = quote.get('c')
-        if price is None or price == 0:
-            price = quote.get('pc')
+        current_price = quote.get('c')
+        prev_close = quote.get('pc')
 
-        if price is not None:
-            return {"price": price}
+        # 如果當前價格為空或0，使用昨日收盤價作為備用
+        if not current_price and prev_close:
+            current_price = prev_close
+
+        if current_price is not None and prev_close is not None:
+            return {"price": current_price, "previous_close": prev_close}
         else:
-            print(f"從 Finnhub 獲取 {symbol} 數據時，價格為空。 回應: {quote}")
+            print(f"從 Finnhub 獲取 {symbol} 數據時，數據不完整。 回應: {quote}")
             return None
 
     except finnhub.FinnhubAPIException as e:
@@ -78,3 +78,4 @@ def fetch_option_chain_from_finnhub_requests(underlying_symbol: str) -> Union[di
     except Exception as e:
         print(f"使用 requests 獲取 {underlying_symbol} 期權鏈時發生未知錯誤: {e}")
         return None
+

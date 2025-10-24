@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: celery-beat-container
-          image: portfolio-tracker:v1
+          image: portfolio-tracker:v2
           imagePullPolicy: Never
           # 啟動 Beat 的指令
           command: ["celery", "-A", "config", "beat", "-l", "info", "-S", "django"]
