@@ -1,0 +1,8 @@
+# alpha-vantage-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alpha-vantage-secret
+type: Opaque
+stringData:
+  ALPHA_VANTAGE_API_KEY: "72FMHTINNF45WYL2"

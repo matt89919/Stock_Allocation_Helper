@@ -23,3 +23,5 @@ spec:
           envFrom:
             - secretRef:
                 name: portfolio-secrets 
+            - secretRef:
+                name: alpha-vantage-secret # for stock candels

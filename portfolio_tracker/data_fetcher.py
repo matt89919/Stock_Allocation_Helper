@@ -1,7 +1,9 @@
 # portfolio_tracker/data_fetcher.py
+import datetime
+import time
 import finnhub
 from django.conf import settings
-from typing import Union
+from typing import List, Union
 
 import requests
 
@@ -79,3 +81,27 @@ def fetch_option_chain_from_finnhub_requests(underlying_symbol: str) -> Union[di
         print(f"使用 requests 獲取 {underlying_symbol} 期權鏈時發生未知錯誤: {e}")
         return None
 
+def fetch_benchmark_candles_from_alpha_vantage(symbol: str) -> List[dict]:
+    """ Fetches historical daily stock prices from Alpha Vantage. """
+    api_key = getattr(settings, 'ALPHA_VANTAGE_API_KEY', None)
+    if not api_key:
+        print("WARNING: ALPHA_VANTAGE_API_KEY is not set.")
+        return []
+
+    url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&outputsize=compact&apikey={api_key}"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+
+        if "Error Message" in data or not data.get("Time Series (Daily)"):
+            print(f"Alpha Vantage API Error or unexpected response: {data}")
+            return []
+
+        time_series = data["Time Series (Daily)"]
+        candles = [{'date': date_str, 'price': float(values['4. close'])} for date_str, values in time_series.items()]
+        return candles[::-1] # Reverse to be in chronological order
+    except Exception as e:
+        print(f"An error occurred fetching from Alpha Vantage: {e}")
+        return []

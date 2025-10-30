@@ -19,5 +19,6 @@ urlpatterns = [
     
     # Add the new path for the summary data view
     path('portfolio-summary/', views.portfolio_summary_view, name='portfolio-summary'),
+    path('benchmark-history/', views.benchmark_history_view, name='benchmark-history'),
 ]
 

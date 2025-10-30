@@ -4,6 +4,8 @@ from django.forms import DecimalField
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+from .data_fetcher import fetch_benchmark_candles_from_alpha_vantage
 from .models import (
     PortfolioSnapshot, Stock, Option, Holding, Deposit, Transaction, RealizedGain
 )
@@ -140,3 +142,8 @@ def portfolio_summary_view(request):
         "total_realized_gains": total_realized_gains,
         "free_cash": free_cash,
     })
+
+@api_view(['GET'])
+def benchmark_history_view(request):
+    benchmark_data = fetch_benchmark_candles_from_alpha_vantage('VOO')
+    return Response(benchmark_data)
